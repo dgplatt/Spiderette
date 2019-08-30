@@ -5,12 +5,21 @@ public class Card {
     String suit;
     boolean known;
     Card next;
+    
     public Card(int num, String suit) {
         this.num = num;
         this.suit = suit;
         this.known = false;
         this.next = null;
     }
+    
+    public Card(Card card) {
+        this.num = card.Num();
+        this.suit = card.Suit();
+        this.known = card.Known();
+        this.next = null;
+    }
+
     public void Print_Card() {
         if (this.known == false) {
             System.out.print("|  Unknown  |");
@@ -28,6 +37,19 @@ public class Card {
             System.out.print("| K of " + this.suit + " |");
         }
     }
+    public boolean equal(Card other) {
+        boolean same = true;
+        if(this.num != other.Num()) {
+            same = false;
+        }
+        if (! this.suit.equals(other.Suit())){
+            same = false;
+        }
+        if (this.known != other.Known()){
+            same = false;
+        }
+        return same;
+    }
     public int Num() {
         return this.num;
     }
@@ -44,6 +66,6 @@ public class Card {
         return this.known;
     }
     public void Flip() {
-        this.known = ! this.known;
+        this.known = true;
     }
 }

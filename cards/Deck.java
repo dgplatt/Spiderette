@@ -3,23 +3,36 @@ import java.util.Random;
 import cards.*;
 
 public class Deck {
-    Card[] deck;
     Card start;
+    int num_cards;
     public Deck() {
-        this.deck = new Card[52];
-        this.Make_Cards();
-        this.Shuffle();
-        this.Setup();
+        this.num_cards = 52;
+        this.start = Setup(Make_Cards());
     }
-    public void Make_Cards() {
-        for (int i = 0; i < 13; i ++) {
-            this.deck[i*4] = new Card(i + 1, "Clbs");
-            this.deck[i*4 + 1] = new Card(i + 1, "Dmds");
-            this.deck[i*4 + 2] = new Card(i + 1, "Hrts");
-            this.deck[i*4 + 3] = new Card(i + 1, "Spds");
+
+    public Deck(Deck deck) {
+        Card old_card = deck.start;
+        Card new_card = new Card(deck.start);
+        this.start = new_card;
+        while(old_card.Next() != null) {
+            new_card.Next(new Card(old_card.Next()));
+            old_card = old_card.Next();
+            new_card = new_card.Next();
         }
     }
-    public void Shuffle() {
+
+    private Card[] Make_Cards() {
+        Card[] deck = new Card[52];
+        for (int i = 0; i < 13; i ++) {
+            deck[i*4] = new Card(i + 1, "Clbs");
+            deck[i*4 + 1] = new Card(i + 1, "Dmds");
+            deck[i*4 + 2] = new Card(i + 1, "Hrts");
+            deck[i*4 + 3] = new Card(i + 1, "Spds");
+        }
+        return Shuffle(deck);
+    }
+
+    private Card[] Shuffle(Card[] deck) {
         int[] placements  = new int[52];
         Random rnd = new Random();
         int key;
@@ -35,24 +48,29 @@ public class Deck {
         }
         Card[] suffled_deck = new Card[52];
         for (int i = 0; i < 52; i ++) {
-            suffled_deck[i] = this.deck[placements[i] - 1];
+            suffled_deck[i] = deck[placements[i] - 1];
         }
-        this.deck = suffled_deck;
+        return suffled_deck;
     }
-    public void Setup() {
-        this.start = this.deck[0];
+    private Card Setup(Card[] deck) {
         for (int i = 0; i < 51; i++) {
-            this.deck[i].Next(this.deck[i+1]);
+            deck[i].Next(deck[i+1]);
         }
+        return deck[0];
     }
+
     public void Print_Deck() {
-        for (int i = 0 ; i < 52; i ++) {
-            this.deck[i].Print_Card();
-        }
+        System.out.println("*** There are " + num_cards + " cards in the Deck! ***");
     }
+
     public Card Start() {
         return this.start;
     }
+
+    public void use() {
+        this.num_cards --;
+    }
+
     public void Start(Card card) {
         this.start = card;
     }
