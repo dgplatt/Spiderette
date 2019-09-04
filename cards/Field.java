@@ -33,12 +33,13 @@ public class Field {
         }
         return this.field[i];
     }
+
     public boolean equals(Field other) {
         Card card_1;
         Card card_2;
         boolean same = true;
         for (int i = 0; i < 7; i ++) {
-            card_1 = this.field[i];
+            card_1 = this.lane(i);
             card_2 = other.lane(i);
             while (card_1 != null && card_2 != null && card_1.equal(card_2))  {
                 card_1 = card_1.Next();
@@ -52,92 +53,98 @@ public class Field {
         return same;
     }
 
-    public void Top(int lane, Card card) {
+    public void Top(int i, Card card) {
         if (card != null){
-            card.Next(this.field[lane]);
+            card.Next(this.lane(i));
         }
-        this.field[lane] = card;
-    }
-    public void Remove(int lane, Card card) {
-        this.field[lane] = card.next;
-        if(card.Next() != null)  {
-            card.Next().Flip();
-        }
-    }
-    public void Remove(int lane) {
-        if (this.complete(lane)) {
-            this.Remove(lane, this.Bottem_Card(lane));
-        }
-
+        this.field[i] = card;
     }
 
-    public void Print_Field() {
+    public boolean complete(int i) {
+        if (this.max_depth(i) == 12) {
+            Card card = this.lane(i);
+            for (int j = 0; j < 12; j ++) {
+                card = card.Next();
+            }
+            this.field[i] = card.Next();
+            this.do_flip(i);
+            return true;
+        }
+        return false;
+    }
+
+    public void print() {
+        System.out.print(this.to_String());
+    }
+
+    public String to_String() {
         Card[] for_print = new Card[7];
+        String string_field = "";
         for (int i = 0; i < 7; i ++) {
-            System.out.print("|     " + i + "     |");
+            string_field += "|     " + i + "     |";
             for_print[i] = this.field[i];
         }
-        System.out.println("");
+        string_field += "\n";;
         for (int i = 0; i < 7; i ++) {
-            System.out.print("-------------");
+            string_field += "-------------";
         }
-        System.out.println("");
+        string_field += "\n";
         boolean empty = false;
         while (!empty) {
             empty = true;
             for (int i = 0; i < 7; i ++) {
                 if (for_print[i] != null) {
-                    for_print[i].Print_Card();
+                    string_field += for_print[i].to_String();
                     for_print[i] = for_print[i].Next();
                     empty = false;
                 }
                 else {
-                    System.out.print("|           |");
+                    string_field += "|           |";
                 }
             }
-            System.out.println("");
+            string_field += "\n";
         }
+        return string_field;
     }
 
-    public boolean Move(Card card, int to, int from) {
-        Card top = this.field[from];
-        Card old_top = this.field[to];
+    public boolean Move_Card(Move move) {
+        Card top = this.field[move.from()];
+        Card card = top;
+        Card old_top = this.field[move.to()];
+        int max_depth = this.max_depth(move.from());
+        if (move.depth() > max_depth) {
+            return false;
+        }
+        for (int i = 0; i < move.depth(); i ++ ) {
+            card = card.Next();
+        }
         if (old_top != null && !(old_top.Num() == card.Num() + 1 && old_top.Known())) {
             return false;
         }
-        this.field[from] = card.Next();
+        this.field[move.from()] = card.Next();
         card.Next(old_top);
-        this.field[to] = top;
+        this.field[move.to()] = top;
         return true;
     }
     
-    public boolean Select (Card card, int from) {
-        Card top = this.field[from];
-        if (top == card && !card.Known()) {
+    public boolean do_flip (int i) {
+        Card card = this.lane(i);
+        if (card != null && !card.Known()) {
             card.Flip();
-            return false;
+            return true;
         }
-        while (top != card) {
-            if(top.Next() == null || top.Next().Suit() != top.Suit() || top.Next().Num() != top.Num() + 1 || !top.Next().Known()) {
-                return false;
-            }
-            top = top.Next();
-        }
-        return true;
+        return false;
     }
 
-    public Card Bottem_Card(int i) {
-        Card card = this.field[i];
-        while(card != null && card.Next() != null && card.Next().Suit() == card.Suit() && card.Next().Num() == card.Num() + 1 && card.Next().Known()) {
+    public int max_depth(int i) {
+        Card card = this.lane(i);
+        int depth = 0;
+        while(card != null && card.ordered()) {
             card = card.Next();
+            depth ++;
         }
-        return card;
+        return depth;
     }
-    public boolean complete(int i) {
-        if (this.lane(i) == null) {
-            return false;
-        }
-        return (this.lane(i).Num() == 1 && this.Bottem_Card(i).Num() == 13);
-    }
+
     
 }

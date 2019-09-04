@@ -14,11 +14,12 @@ public class Auto_Solver {
         Actions no_moves = new Actions(field);
         this.acts.get(10).add(no_moves);
     }
+
     public void make_next_actions () {
         int[] total = new int[30];
         total[10] = 1;
         int max_value = 0;
-        int num_repeat = 9;
+        int num_repeat = 5;
         boolean equal;
         int[] temp_total = new int[30];
         int x; int p;
@@ -26,31 +27,26 @@ public class Auto_Solver {
         for (int i = 0; i < 30; i ++) {
             temp_acts.add(new ArrayList<Actions>());
         }
-        for (int i = 0; i < num_repeat; i ++) {
+        boolean complete = false;
+        for (int i = 0; i < num_repeat && ! complete; i ++) {
             p = 0;
             for (ArrayList<Actions> act_list: this.acts) {
+                p ++;
                 if(p - 10 < max_value - 3*(num_repeat - i) && p != 29) {
                     continue;
                 }
-                p ++;
                 for (Actions act: act_list){
-                    if (act.is_done()) {
+                    if (complete) {
+                        break;
+                    } if (act.is_done()) {
                         continue;
                     } else if(act.Value() > max_value){
                         max_value = act.Value();
                     }
-                    //act.print();
-                    for (int[] move: Find_Available_Moves(act.field)){
+                    for (Move move: Find_Available_Moves(act.field)){
                         Actions temp_act = new Actions(act);
-                        temp_act.add(move);
+                        complete = temp_act.add(move);
                         equal = false;
-                        if(temp_act.Field().complete(move[2])) {
-                            temp_act.Field().Remove(move[2]);
-                            temp_act.Value(30);
-                             if(temp_act.Value() > max_value){
-                                max_value = temp_act.Value();
-                            }
-                        }
                         if(temp_act.Value() > 19) {
                             x = 29;
                         } else if(temp_act.Value() < -10) {
@@ -68,6 +64,9 @@ public class Auto_Solver {
                             temp_acts.get(x).add(temp_act);
                             temp_total[x] ++;
                         }
+                        if (complete){
+                            break;
+                        }
                     }
                     act.done();
                 }
@@ -79,21 +78,20 @@ public class Auto_Solver {
                 temp_acts.get(y).clear();
             }
         }
-        System.out.println("");
     }
     public ArrayList<ArrayList<Actions>> acts() {
         return this.acts;
     }
-    public ArrayList<int[]> Find_Available_Moves(Field field) {
-        ArrayList<int[]> moves = new ArrayList();
-        for(int lane = 0; lane < 7; lane++) {
-            Card card = field.lane(lane);
+    public ArrayList<Move> Find_Available_Moves(Field field) {
+        ArrayList<Move> moves = new ArrayList();
+        for(int from = 0; from < 7; from++) {
+            Card card = field.lane(from);
             int depth = 0;
             int num_moves;
             int value;
             while(card != null) {
                 for (int i = 0; i < 7; i ++) {
-                    if (i == lane) {
+                    if (i == from) {
                         continue;
                     }
                     value = 0;
@@ -102,11 +100,11 @@ public class Auto_Solver {
                         if(card.Next() == null) {
                             value += 2;
                         } else if (! card.Next().Known()) {
-                            value += 6;
+                            value += 4;
                         } else if (card.Next().Num() == card.Num() + 1  && card.Next().Suit().equals(card.Suit())) {
                             value -= 3;
                         } else if (card.Next().Num() != card.Num() + 1) {
-                            value += 2;
+                            value += 1;
                         } 
                         if (field.lane(i) != null) {
                             if(field.lane(i).Suit().equals(card.Suit())) {
@@ -117,7 +115,7 @@ public class Auto_Solver {
                         } else {
                             value -= 2;
                         }
-                        moves.add(new int[]{ depth, lane, i, value});
+                        moves.add(new Move( depth, from, i, value));
                     }
                 }
                 if(card.Next() == null || card.Next().Suit() != card.Suit() || card.Next().Num() != card.Num() + 1 || ! card.Next().Known()) {

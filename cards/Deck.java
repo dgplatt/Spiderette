@@ -59,7 +59,7 @@ public class Deck {
         return deck[0];
     }
 
-    public void Print_Deck() {
+    public void print() {
         System.out.println("*** There are " + num_cards + " cards in the Deck! ***");
     }
 

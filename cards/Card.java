@@ -20,23 +20,34 @@ public class Card {
         this.next = null;
     }
 
-    public void Print_Card() {
-        if (this.known == false) {
-            System.out.print("|  Unknown  |");
-        } else if (this.num == 1) {
-            System.out.print("| A of " + this.suit + " |");
-        } else if (this.num < 10) {
-            System.out.print("| " + this.num + " of " + this.suit + " |");
-        } else if (this.num == 10) {
-            System.out.print("| X of " + this.suit + " |");
-        } else if (this.num == 11) {
-            System.out.print("| J of " + this.suit + " |");
-        } else if (this.num == 12) {
-            System.out.print("| Q of " + this.suit + " |");
-        } else if (this.num == 13) {
-            System.out.print("| K of " + this.suit + " |");
-        }
+    public void print() {
+        System.out.print(this.to_String());
     }
+
+    public String to_String() {
+        String string_card = "";
+        if (this.known == false) {
+            string_card += "|  Unknown  |";
+        } else if (this.num == 1) {
+            string_card += "| A of " + this.suit + " |";
+        } else if (this.num < 10) {
+            string_card += "| " + this.num + " of " + this.suit + " |";
+        } else if (this.num == 10) {
+            string_card += "| X of " + this.suit + " |";
+        } else if (this.num == 11) {
+            string_card += "| J of " + this.suit + " |";
+        } else if (this.num == 12) {
+            string_card += "| Q of " + this.suit + " |";
+        } else if (this.num == 13) {
+            string_card += "| K of " + this.suit + " |";
+        }
+        return string_card;
+    }
+
+    public boolean ordered() {
+        return (this.Next() != null && this.Next().Suit().equals(this.Suit()) && this.Next().Num() == this.Num() + 1 && this.Next().Known());
+    }
+
     public boolean equal(Card other) {
         boolean same = true;
         if(this.num != other.Num()) {
