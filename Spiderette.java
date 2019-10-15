@@ -1,6 +1,5 @@
 import java.util.*;
 import cards.*;
-import auto.Actions;
 import auto.*;
 
 public class Spiderette {
@@ -8,6 +7,8 @@ public class Spiderette {
     Field field;
     int num_won;
     int games_played;
+    double[] starter_scores;
+    double[] winning_starter_scores;
 
     public static void main (String[] args) {
         Spiderette game = new Spiderette();
@@ -19,13 +20,13 @@ public class Spiderette {
             comm = input.nextLine();
         }
         if (comm.equals("y")) {
-            for (int i = 0; i < 1000; i++) {
+            for (int i = 0; i < 10000; i++) {
                 game.auto_play(true);
-                if (i % 100 == 0) { 
-                    System.out.print(" .");
-                }
             }
-            System.out.print("\n");
+            // print stats
+            for (int i = 0; i < 200; i ++) {
+                System.out.println(i + ": Won " + game.winning_starter_scores[i]+ " out of " + game.starter_scores[i] + " games!");
+            }
         } else {
             comm = "";
             do {
@@ -47,24 +48,30 @@ public class Spiderette {
     Spiderette () {
         this.num_won = 0;
         this.games_played = 0;
+        this.starter_scores = new double[200];
+        this.winning_starter_scores = new double[200];
     }
 
 
     boolean auto_play(boolean testing) {
-        this.field = new Field();
-        this.deck = new Deck();
         this.Setup();
         Scanner input = new Scanner(System.in);
         String comm = "";
         int num_moves = 0;
         int done = 0;
         String to_print = "";
+        boolean starter = true;
+        int starter_score = 0;
         while (done != 4) {
             Auto_Solver solver = new Auto_Solver(this.field);
             solver.make_next_actions();
             Actions best_act = solver.Max();
             to_print += this.field.to_String();
             if (best_act == null) {
+                if (starter) {
+                    starter = false;
+                    this.starter_scores[starter_score] ++;
+                }
                 if(this.Deal()){
                     continue;
                 } 
@@ -80,6 +87,9 @@ public class Spiderette {
             for(Move move: best_act.moves()) {
                 to_print += move.to_String();
                 field.Move_Card(move);
+                if (starter) {
+                    starter_score += move.value();
+                }
                 num_moves ++;
                 if (this.field.complete(move.to())) {
                     done++;
@@ -92,17 +102,16 @@ public class Spiderette {
 
         this.num_won++;
         this.games_played ++;
-        System.out.print(to_print);
+        this.winning_starter_scores[starter_score] ++;
         System.out.println("*****  WINNER!! in " + num_moves +  " Moves ******");
         if (! testing) {
+            System.out.print(to_print);
             return repeat();
         }
         return testing;
     }
 
     boolean play() {
-        this.field = new Field(); 
-        this.deck = new Deck();
         this.Setup();
 
         Scanner input = new Scanner(System.in);
@@ -201,6 +210,8 @@ public class Spiderette {
     }
 
     private void Setup() {
+        this.field = new Field();
+        this.deck = new Deck();
         Card current;
         for (int i = 0; i < 7; i++) {
             for (int j = i; j < 7; j ++) {

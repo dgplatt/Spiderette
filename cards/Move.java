@@ -29,7 +29,7 @@ public class Move {
         return this.value;
     }
     public String to_String() {
-        return ("  ||  depth : " + this.depth + "  ||  from : " + this.from + "  ||  to : " + this.to + "\n");
+        return ("  ||  depth : " + this.depth + "  ||  from : " + this.from + "  ||  to : " + this.to + "||  value : " + this.value +"\n");
     }
     public void print(){
         System.out.print(this.to_String());
