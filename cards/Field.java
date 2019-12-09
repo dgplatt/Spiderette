@@ -37,7 +37,6 @@ public class Field {
     public boolean equals(Field other) {
         Card card_1;
         Card card_2;
-        boolean same = true;
         for (int i = 0; i < 7; i ++) {
             card_1 = this.lane(i);
             card_2 = other.lane(i);
@@ -46,11 +45,10 @@ public class Field {
                 card_2 = card_2.Next();
             }
             if(card_1 != null && card_2 != null) {
-                same  = false;
-                break;
+                return false;
             }
         }
-        return same;
+        return true;
     }
 
     public void Top(int i, Card card) {
@@ -67,7 +65,6 @@ public class Field {
                 card = card.Next();
             }
             this.field[i] = card.Next();
-            this.do_flip(i);
             return true;
         }
         return false;
@@ -107,24 +104,36 @@ public class Field {
         return string_field;
     }
 
-    public boolean Move_Card(Move move) {
-        Card top = this.field[move.from()];
-        Card card = top;
-        Card old_top = this.field[move.to()];
+    public boolean Can_Move(Move move){
         int max_depth = this.max_depth(move.from());
         if (move.depth() > max_depth) {
             return false;
         }
+        Card from_top = this.field[move.from()];
+        Card to_top = this.field[move.to()];
+        if (from_top == null) {
+            return false;
+        }
+        if (to_top != null && !(to_top.Num() == from_top.Num() + move.depth() + 1 && to_top.Known())) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean Move_Card(Move move) {
+        if (! this.Can_Move(move)) {
+            return false;
+        }
+        Card from_top = this.field[move.from()];
+        Card to_top = this.field[move.to()];
+        Card card = from_top;
         for (int i = 0; i < move.depth(); i ++ ) {
             card = card.Next();
         }
-        if (old_top != null && !(old_top.Num() == card.Num() + 1 && old_top.Known())) {
-            return false;
-        }
         this.field[move.from()] = card.Next();
-        card.Next(old_top);
-        this.field[move.to()] = top;
-        return true;
+        card.Next(to_top);
+        this.field[move.to()] = from_top;
+        return this.complete(move.to());
     }
     
     public boolean do_flip (int i) {
