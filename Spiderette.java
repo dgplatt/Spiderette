@@ -7,28 +7,40 @@ public class Spiderette {
     Field field;
     int num_won;
     int games_played;
-    double[] starter_scores;
-    double[] winning_starter_scores;
+    int[] starter_scores;
+    int[] winning_starter_scores;
+    boolean testing;
+
+    Spiderette () {
+        this.num_won = 0;
+        this.games_played = 0;
+        this.starter_scores = new int[200];
+        this.winning_starter_scores = new int[200];
+        this.testing = false;
+    }
 
     public static void main (String[] args) {
         Spiderette game = new Spiderette();
-        boolean again;
         Scanner input = new Scanner(System.in);
         String comm = "";
         System.out.print("Testing (y/n)?:  ");
+        int[] values = new int[] {2, 4, 1, 1, 2};
         while (! comm.equals("y") && ! comm.equals("n")) {
             comm = input.nextLine();
         }
         if (comm.equals("y")) {
+            game.testing = true;
             for (int i = 0; i < 10000; i++) {
-                if(i%500 == 0) {
+                if(i%100 == 0) {
                     System.out.println(i);
                 }
-                game.auto_play(true);
+                game.auto_play(values);
             }
             // print stats
             for (int i = 0; i < 200; i ++) {
-                System.out.println(i + ": Won " + game.winning_starter_scores[i]+ " out of " + game.starter_scores[i] + " games!");
+                if (game.starter_scores[i] > 0) {
+                    System.out.println(i + ": Won " + game.winning_starter_scores[i]+ " out of " + game.starter_scores[i] + " games!");
+                }
             }
         } else {
             comm = "";
@@ -38,36 +50,31 @@ public class Spiderette {
                     comm = input.nextLine();
                 }
                 if (comm.equals("y")) {
-                    again = game.auto_play(false);
+                    game.auto_play(values);
                 } else {
-                    again = game.play();
+                    game.play();
                 }
                 comm = "";
-            } while (again);
+            } while (game.repeat());
         }
         System.out.println("You Won " + game.num_won + " out of " + game.games_played + " Games Played!!!");
     }
 
-    Spiderette () {
-        this.num_won = 0;
-        this.games_played = 0;
-        this.starter_scores = new double[200];
-        this.winning_starter_scores = new double[200];
-    }
 
 
-    boolean auto_play(boolean testing) {
-        this.Setup();
-        Scanner input = new Scanner(System.in);
-        String comm = "";
-        int num_moves = 0;
+    void auto_play(int[] values) {
         int done = 0;
+        int num_moves = 0;
+        int starter_score = 0;
+        String comm = "";
         String to_print = "";
         boolean starter = true;
-        int starter_score = 0;
+
+        this.Setup();
+        Auto_Solver solver = new Auto_Solver(7, values);
+
         while (done != 4) {
-            Auto_Solver solver = new Auto_Solver(this.field);
-            Actions best_act = solver.make_next_actions();
+            Actions best_act = solver.make_next_actions(this.field);
             to_print += this.field.to_String();
             if (best_act == null) {
                 if (starter) {
@@ -78,12 +85,11 @@ public class Spiderette {
                     continue;
                 } 
                 this.games_played ++;
-                if (! testing) {
+                if (! this.testing) {
                     System.out.print(to_print);
                     System.out.println("*****  GameOver in " + num_moves +  " Moves  ******");
-                    return repeat();
                 }
-                return testing;
+                return;
             }
             for(Move move: best_act.moves()) {
                 to_print += move.to_String();
@@ -103,12 +109,10 @@ public class Spiderette {
         this.num_won++;
         this.games_played ++;
         this.winning_starter_scores[starter_score] ++;
-        System.out.println("*****  WINNER!! in " + num_moves +  " Moves ******");
-        if (! testing) {
+        if (!this.testing) {
             System.out.print(to_print);
-            return repeat();
         }
-        return testing;
+        System.out.println("*****  WINNER!! in " + num_moves +  " Moves ******");
     }
 
     boolean play() {
@@ -128,16 +132,15 @@ public class Spiderette {
         while (done != 4) {
             field.print();
             deck.print();
-            Auto_Solver solver = new Auto_Solver(this.field);
-            solver.make_next_actions();
-            Actions best_act = solver.make_next_actions();
-            if (best_act == null) {
-                System.out.println("failure");
-            } else {
-                for(Move move: best_act.moves()) {
-                    move.print();
-                }
-            }
+            //Auto_Solver solver = new Auto_Solver(this.field);
+            //Actions best_act = solver.make_next_actions();
+            //if (best_act == null) {
+            //    System.out.println("failure");
+            //} else {
+            //    for(Move move: best_act.moves()) {
+            //        move.print();
+            //    }
+            //}
             System.out.print("Enter Commands:  ");
             do {
                 comm = input.nextLine();

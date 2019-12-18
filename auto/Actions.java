@@ -18,9 +18,10 @@ public class Actions {
     }
 
     void add (Move move) {
-        if (this.field.Move_Card(move)) {
-            this.value += 30;
-        }
+        this.field.Move_Card(move);
+        //if (this.field.Move_Card(move)) {
+        //    this.value += 30;
+        //}
         this.actions.add(move);
         this.value += move.value();
     }
