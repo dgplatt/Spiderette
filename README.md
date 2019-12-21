@@ -7,4 +7,4 @@ To use the program run "javac Spiderette.java" then "java Spiderette".  The prog
 
 The automatic solver works by assigning a value to every move.  The program finds the best value move 7 moves ahead and then acting on it.  The values are +4 for revealing an unknown card,  +/- 2 for revealing/covering a blank space,  +/- 1 if you put/remove a card on another in order, + 1 if you remove a card which is out of order, and +/- 3 if you put/remove a card on another in order and suited.  It can predict more moves ahead but increasing the number of predictions will slow down the program.  It it can't find a move with a possitive value it deals from the deck or it is game over.
 
-The program was a success because it has a completion rate of around 4.42% to my own 1.4% and generally solves the game in 70 to 130 moves.
+The program was a success because it has a completion rate of around 5.3% to my own 1.4% and generally solves the game in 70 to 130 moves.

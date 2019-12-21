@@ -20,27 +20,22 @@ public class Auto_Solver {
     public Actions make_next_actions (Field field) {
         int max_value = 0;
         int min_value = 0;
-        int start, end, floor;
+        int start, end;
         Actions max_actions = null;
-        boolean equal;
         ArrayList<ArrayList<Actions>> temp;
         ArrayList<Actions> act_list;
 
         ArrayList<ArrayList<Actions>> all_acts = new ArrayList<ArrayList<Actions>>(this.num_buckets);
+        ArrayList<ArrayList<Actions>> prev_acts = new ArrayList<ArrayList<Actions>>(this.num_buckets);
+        ArrayList<ArrayList<Actions>> temp_acts = new ArrayList<ArrayList<Actions>>(this.num_buckets);
+
         for (int i = 0; i < this.num_buckets; i ++) {
             all_acts.add(new ArrayList<Actions>());
-        }
-
-        ArrayList<ArrayList<Actions>> prev_acts = new ArrayList<ArrayList<Actions>>(this.num_buckets);
-        for (int i = 0; i < this.num_buckets; i ++) {
             prev_acts.add(new ArrayList<Actions>());
+            temp_acts.add(new ArrayList<Actions>());
         }
         prev_acts.get(this.center).add(new Actions(field));
 
-        ArrayList<ArrayList<Actions>> temp_acts = new ArrayList<ArrayList<Actions>>(this.num_buckets);
-        for (int i = 0; i < this.num_buckets; i ++) {
-            temp_acts.add(new ArrayList<Actions>());
-        }
 
         for (int i = 0; i < this.num_repeat; i ++) {
             start = Math.max((max_value + 1) - this.turn_max * (this.num_repeat - i), min_value) + this.center;
@@ -48,27 +43,29 @@ public class Auto_Solver {
             for (int y = end; y >= start; y--) {
                 act_list =  prev_acts.get(y);
                 for (Actions act: act_list){
-                    for (Move move: Find_Available_Moves(act.field)){
+                    move_loop: for (Move move: Find_Available_Moves(act.field)){
                         if(act.Value() + move.value() < (max_value + 1) - this.turn_max * (this.num_repeat - i - 1)) {
                             continue;
                         }
                         Actions temp_act = new Actions(act);
-                        temp_act.add(move);
-                        equal = false;
-                        for (Actions Act: all_acts.get(temp_act.Value() + this.center)) {
-                            if(Act.equals(temp_act)) {
-                                equal = true;
-                                break;
+                        if (temp_act.add(move)) {
+                            if (temp_act.field.lane(move.to()) == null) {
+                                temp_act.Value(this.values[0]);
+                            } else if (!temp_act.field.lane(move.to()).Known()) {
+                                temp_act.Value(this.values[1]);
                             }
                         }
-                        if(!equal) {
-                            temp_acts.get(temp_act.Value() + this.center).add(temp_act);
-                            if(temp_act.Value() > max_value){
-                                max_actions = temp_act;
-                                max_value = temp_act.Value();
-                            } else if(temp_act.Value() < min_value) {
-                                min_value = temp_act.Value();
+                        for (Actions Act: all_acts.get(temp_act.Value() + this.center)) {
+                            if(Act.equals(temp_act)) {
+                                continue move_loop;
                             }
+                        }
+                        temp_acts.get(temp_act.Value() + this.center).add(temp_act);
+                        if(temp_act.Value() > max_value){
+                            max_actions = temp_act;
+                            max_value = temp_act.Value();
+                        } else if(temp_act.Value() < min_value) {
+                            min_value = temp_act.Value();
                         }
                     }
                 }

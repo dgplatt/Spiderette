@@ -17,13 +17,10 @@ public class Actions {
         this.value = other.Value();
     }
 
-    void add (Move move) {
-        this.field.Move_Card(move);
-        //if (this.field.Move_Card(move)) {
-        //    this.value += 30;
-        //}
+    boolean add (Move move) {
         this.actions.add(move);
         this.value += move.value();
+        return this.field.Move_Card(move);
     }
 
     boolean equals(Actions other) {

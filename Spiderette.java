@@ -14,27 +14,29 @@ public class Spiderette {
     Spiderette () {
         this.num_won = 0;
         this.games_played = 0;
-        this.starter_scores = new int[200];
-        this.winning_starter_scores = new int[200];
+        this.starter_scores = new int[300];
+        this.winning_starter_scores = new int[300];
         this.testing = false;
     }
 
     public static void main (String[] args) {
+        int num_repeat = 7;
+        int[] values = new int[] {2, 4, 0, 0, 3};
+
         Spiderette game = new Spiderette();
         Scanner input = new Scanner(System.in);
         String comm = "";
         System.out.print("Testing (y/n)?:  ");
-        int[] values = new int[] {2, 4, 1, 1, 2};
         while (! comm.equals("y") && ! comm.equals("n")) {
             comm = input.nextLine();
         }
         if (comm.equals("y")) {
             game.testing = true;
             for (int i = 0; i < 10000; i++) {
-                if(i%100 == 0) {
+                if(i%1000 == 0) {
                     System.out.println(i);
                 }
-                game.auto_play(values);
+                game.auto_play(num_repeat, values);
             }
             // print stats
             for (int i = 0; i < 200; i ++) {
@@ -50,9 +52,9 @@ public class Spiderette {
                     comm = input.nextLine();
                 }
                 if (comm.equals("y")) {
-                    game.auto_play(values);
+                    game.auto_play(num_repeat, values);
                 } else {
-                    game.play();
+                    game.play(num_repeat, values);
                 }
                 comm = "";
             } while (game.repeat());
@@ -62,7 +64,7 @@ public class Spiderette {
 
 
 
-    void auto_play(int[] values) {
+    void auto_play(int num_repeat, int[] values) {
         int done = 0;
         int num_moves = 0;
         int starter_score = 0;
@@ -71,7 +73,7 @@ public class Spiderette {
         boolean starter = true;
 
         this.Setup();
-        Auto_Solver solver = new Auto_Solver(7, values);
+        Auto_Solver solver = new Auto_Solver(num_repeat, values);
 
         while (done != 4) {
             Actions best_act = solver.make_next_actions(this.field);
@@ -115,7 +117,7 @@ public class Spiderette {
         System.out.println("*****  WINNER!! in " + num_moves +  " Moves ******");
     }
 
-    boolean play() {
+    boolean play(int num_repeat, int[] values) {
         this.Setup();
 
         Scanner input = new Scanner(System.in);
@@ -199,6 +201,7 @@ public class Spiderette {
         this.num_won++;
         return repeat();
     }
+
 
     boolean repeat() {
         Scanner input = new Scanner(System.in);
