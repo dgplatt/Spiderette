@@ -1,9 +1,7 @@
 package cards;
 public class Move {
-    int depth;
-    int from;
-    int to;
-    int value;
+    int depth, from, to, value;
+    
     public Move (int depth, int from, int to, int value) {
         this.depth = depth;
         this.from = from;

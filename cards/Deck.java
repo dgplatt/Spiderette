@@ -1,6 +1,5 @@
 package cards;
 import java.util.Random;
-import cards.*;
 
 public class Deck {
     Card start;
@@ -14,10 +13,10 @@ public class Deck {
         Card old_card = deck.start;
         Card new_card = new Card(deck.start);
         this.start = new_card;
-        while(old_card.Next() != null) {
-            new_card.Next(new Card(old_card.Next()));
-            old_card = old_card.Next();
-            new_card = new_card.Next();
+        while(old_card.getNext() != null) {
+            new_card.setNext(new Card(old_card.getNext()));
+            old_card = old_card.getNext();
+            new_card = new_card.getNext();
         }
     }
 
@@ -54,7 +53,7 @@ public class Deck {
     }
     private Card Setup(Card[] deck) {
         for (int i = 0; i < 51; i++) {
-            deck[i].Next(deck[i+1]);
+            deck[i].setNext(deck[i+1]);
         }
         return deck[0];
     }

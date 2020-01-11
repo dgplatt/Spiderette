@@ -14,7 +14,7 @@ public class Card {
     }
     
     public Card(Card card) {
-        this.num = card.Num();
+        this.num = card.getNum();
         this.suit = card.Suit();
         this.known = card.Known();
         this.next = null;
@@ -45,12 +45,12 @@ public class Card {
     }
 
     public boolean ordered() {
-        return (this.Next() != null && this.Next().Suit().equals(this.Suit()) && this.Next().Num() == this.Num() + 1 && this.Next().Known());
+        return (this.getNext() != null && this.getNext().Suit().equals(this.Suit()) && this.getNext().getNum() == this.getNum() + 1 && this.getNext().Known());
     }
 
     public boolean equal(Card other) {
         boolean same = true;
-        if(this.num != other.Num()) {
+        if(this.num != other.getNum()) {
             same = false;
         }
         if (! this.suit.equals(other.Suit())){
@@ -61,16 +61,16 @@ public class Card {
         }
         return same;
     }
-    public int Num() {
+    public int getNum() {
         return this.num;
     }
     public String Suit() {
         return this.suit;
     }
-    public Card Next() {
+    public Card getNext() {
         return this.next;
     }
-    public void Next(Card next) {
+    public void setNext(Card next) {
         this.next = next;
     }
     public boolean Known() {

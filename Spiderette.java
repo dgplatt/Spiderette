@@ -20,7 +20,7 @@ public class Spiderette {
     }
 
     public static void main (String[] args) {
-        int num_repeat = 7;
+        int num_repeat = 8;
         int[] values = new int[] {2, 4, 0, 0, 3};
 
         Spiderette game = new Spiderette();
@@ -33,9 +33,7 @@ public class Spiderette {
         if (comm.equals("y")) {
             game.testing = true;
             for (int i = 0; i < 10000; i++) {
-                if(i%1000 == 0) {
-                    System.out.println(i);
-                }
+                System.out.println(i);
                 game.auto_play(num_repeat, values);
             }
             // print stats
@@ -59,6 +57,7 @@ public class Spiderette {
                 comm = "";
             } while (game.repeat());
         }
+        input.close();
         System.out.println("You Won " + game.num_won + " out of " + game.games_played + " Games Played!!!");
     }
 
@@ -68,7 +67,6 @@ public class Spiderette {
         int done = 0;
         int num_moves = 0;
         int starter_score = 0;
-        String comm = "";
         String to_print = "";
         boolean starter = true;
 
@@ -76,8 +74,8 @@ public class Spiderette {
         Auto_Solver solver = new Auto_Solver(num_repeat, values);
 
         while (done != 4) {
-            Actions best_act = solver.make_next_actions(this.field);
-            to_print += this.field.to_String();
+            MoveSet best_act = solver.make_next_actions(this.field);
+            to_print += this.field.toString();
             if (best_act == null) {
                 if (starter) {
                     starter = false;
@@ -93,16 +91,16 @@ public class Spiderette {
                 }
                 return;
             }
-            for(Move move: best_act.moves()) {
+            for(Move move: best_act.getMoves()) {
                 to_print += move.to_String();
-                if (field.Move_Card(move)) {
+                if (field.moveCard(move)) {
                     done++;
                 }
                 if (starter) {
                     starter_score += move.value();
                 }
                 num_moves ++;
-                if(this.field.do_flip(move.from()) || this.field.do_flip(move.to())) {
+                if(this.field.doFlip(move.from()) || this.field.doFlip(move.to())) {
                     break;
                 }
             }
@@ -130,19 +128,19 @@ public class Spiderette {
         System.out.println("New --> start new game");
         System.out.println("Deal --> deal the top of the deck");
         System.out.println("[0-6] --> select a lane");
-    
+        
+        Auto_Solver solver = new Auto_Solver(num_repeat, values);
         while (done != 4) {
             field.print();
             deck.print();
-            //Auto_Solver solver = new Auto_Solver(this.field);
-            //Actions best_act = solver.make_next_actions();
-            //if (best_act == null) {
-            //    System.out.println("failure");
-            //} else {
-            //    for(Move move: best_act.moves()) {
-            //        move.print();
-            //    }
-            //}
+            MoveSet best_act = solver.make_next_actions(this.field);
+            if (best_act == null) {
+                System.out.println("No Best Move");
+            } else {
+                for(Move move: best_act.getMoves()) {
+                   move.print();
+                }
+            }
             System.out.print("Enter Commands:  ");
             do {
                 comm = input.nextLine();
@@ -163,7 +161,7 @@ public class Spiderette {
                     System.out.println("No card there");
                     continue;
                 }
-                depth = this.field.max_depth(from);
+                depth = this.field.maxDepth(from);
                 if (depth > 0) {
                     System.out.print("Max Depth y/n?:  ");
                     do {
@@ -177,7 +175,7 @@ public class Spiderette {
                         depth = Integer.parseInt(comm);
                     }
                 }
-                if (this.field.do_flip(from)) { 
+                if (this.field.doFlip(from)) { 
                     continue; 
                 }
                 do {
@@ -187,8 +185,8 @@ public class Spiderette {
 
                 to = Integer.parseInt(comm);
                 Move move = new Move(depth, from, to);
-                if (this.field.Can_Move(move)){
-                    if (this.field.Move_Card(move)) {
+                if (this.field.canMove(move)){
+                    if (this.field.moveCard(move)) {
                         done++;
                     }
                 } else {
@@ -221,13 +219,9 @@ public class Spiderette {
             for (int j = i; j < 7; j ++) {
                 this.deck.use();
                 current = this.deck.Start();
-                this.deck.Start(current.Next());
-                if(this.field.lane(j) != null) {
-                    current.Next(this.field.lane(j));
-                } else {
-                    current.Next(null);
-                }
-                this.field.Top(j,current);
+                this.deck.Start(current.getNext());
+                current.setNext(this.field.lane(j));
+                this.field.top(j,current);
             }
         }
         for (int i = 0; i < 7; i ++) {
@@ -243,9 +237,9 @@ public class Spiderette {
         for (int i = 0; i < 7 && this.deck.Start() != null ; i++) {
             this.deck.use();
             current = this.deck.Start();
-            this.deck.Start(current.Next());
-            current.Next(this.field.lane(i));
-            this.field.Top(i, current);
+            this.deck.Start(current.getNext());
+            current.setNext(this.field.lane(i));
+            this.field.top(i, current);
             current.Flip();
         }
         return true;
