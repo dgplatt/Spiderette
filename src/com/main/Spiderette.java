@@ -1,6 +1,7 @@
+package com.main;
 import java.util.*;
-import cards.*;
-import auto.*;
+import com.cards.*;
+import com.auto.*;
 
 public class Spiderette {
     Deck deck;
@@ -10,6 +11,7 @@ public class Spiderette {
     int[] starter_scores;
     int[] winning_starter_scores;
     boolean testing;
+    static Scanner input = new Scanner(System.in);
 
     Spiderette () {
         this.num_won = 0;
@@ -18,50 +20,6 @@ public class Spiderette {
         this.winning_starter_scores = new int[300];
         this.testing = false;
     }
-
-    public static void main (String[] args) {
-        int num_repeat = 8;
-        int[] values = new int[] {2, 4, 0, 0, 3};
-
-        Spiderette game = new Spiderette();
-        Scanner input = new Scanner(System.in);
-        String comm = "";
-        System.out.print("Testing (y/n)?:  ");
-        while (! comm.equals("y") && ! comm.equals("n")) {
-            comm = input.nextLine();
-        }
-        if (comm.equals("y")) {
-            game.testing = true;
-            for (int i = 0; i < 10000; i++) {
-                System.out.println(i);
-                game.auto_play(num_repeat, values);
-            }
-            // print stats
-            for (int i = 0; i < 200; i ++) {
-                if (game.starter_scores[i] > 0) {
-                    System.out.println(i + ": Won " + game.winning_starter_scores[i]+ " out of " + game.starter_scores[i] + " games!");
-                }
-            }
-        } else {
-            comm = "";
-            do {
-                System.out.print("Auto (y/n)?:  ");
-                while (! comm.equals("y") && ! comm.equals("n")) {
-                    comm = input.nextLine();
-                }
-                if (comm.equals("y")) {
-                    game.auto_play(num_repeat, values);
-                } else {
-                    game.play(num_repeat, values);
-                }
-                comm = "";
-            } while (game.repeat());
-        }
-        input.close();
-        System.out.println("You Won " + game.num_won + " out of " + game.games_played + " Games Played!!!");
-    }
-
-
 
     void auto_play(int num_repeat, int[] values) {
         int done = 0;
@@ -118,7 +76,6 @@ public class Spiderette {
     boolean play(int num_repeat, int[] values) {
         this.Setup();
 
-        Scanner input = new Scanner(System.in);
         String comm = "";
         int depth; int from; int to; Card card;
         int done = 0;
@@ -202,7 +159,6 @@ public class Spiderette {
 
 
     boolean repeat() {
-        Scanner input = new Scanner(System.in);
         String comm = "";
         System.out.print("Again (y/n)?:  ");
         while (! comm.equals("y") && ! comm.equals("n")) {
@@ -225,7 +181,7 @@ public class Spiderette {
             }
         }
         for (int i = 0; i < 7; i ++) {
-            this.field.lane(i).Flip();
+            this.field.lane(i).flip();
         }
     }
 
@@ -240,7 +196,7 @@ public class Spiderette {
             this.deck.Start(current.getNext());
             current.setNext(this.field.lane(i));
             this.field.top(i, current);
-            current.Flip();
+            current.flip();
         }
         return true;
     }

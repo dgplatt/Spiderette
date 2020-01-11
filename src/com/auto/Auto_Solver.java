@@ -1,5 +1,5 @@
-package auto;
-import cards.*;
+package com.auto;
+import com.cards.*;
 import java.util.*;
 
 public class Auto_Solver {
@@ -50,7 +50,7 @@ public class Auto_Solver {
                         if (temp_act.add(move)) {
                             if (temp_act.field.lane(move.to()) == null) {
                                 temp_act.addValue(this.values[0]);
-                            } else if (!temp_act.field.lane(move.to()).Known()) {
+                            } else if (!temp_act.field.lane(move.to()).isKnown()) {
                                 temp_act.addValue(this.values[1]);
                             }
                         }
@@ -84,7 +84,7 @@ public class Auto_Solver {
         int depth, value, top_num, max_depth;
         for(int from = 0; from < 7; from++) {
             bottem = field.lane(from);
-            if (bottem == null || !bottem.Known()) {
+            if (bottem == null || !bottem.isKnown()) {
                 continue;
             }
             top_num = bottem.getNum();
@@ -104,27 +104,27 @@ public class Auto_Solver {
                     //for (int x = 0; x < max_depth; x ++) {
                     //    moves.add(new Move(x, from, i, -5));
                     //}
-                    if (! bottem.getNext().Known()) {
+                    if (! bottem.getNext().isKnown()) {
                         value += this.values[1];
                     } else if (bottem.getNext().getNum() != bottem.getNum() + 1) {
                         value += this.values[2];
-                    } else if (! bottem.getNext().Suit().equals(bottem.Suit())) {
+                    } else if (! bottem.getNext().getSuit().equals(bottem.getSuit())) {
                         value -= this.values[3];
                     }
                     moves.add(new Move(max_depth, from, i, value));
-                } else if (other != null && other.getNum() > top_num && other.getNum() <= bottem.getNum() + 1 && other.Known()) {
+                } else if (other != null && other.getNum() > top_num && other.getNum() <= bottem.getNum() + 1 && other.isKnown()) {
                     depth = other.getNum() - (top_num + 1);
                     if (depth == max_depth) {
                         if(bottem.getNext() == null) {
                             value += this.values[0];
-                        } else if (! bottem.getNext().Known()) {
+                        } else if (! bottem.getNext().isKnown()) {
                             value += this.values[1];
                         } else if (bottem.getNext().getNum() != bottem.getNum() + 1) {
                             value += this.values[2];
-                        } else if (! bottem.getNext().Suit().equals(bottem.Suit())) {
+                        } else if (! bottem.getNext().getSuit().equals(bottem.getSuit())) {
                             value -= this.values[3];
                         } 
-                        if(other.Suit().equals(bottem.Suit())) {
+                        if(other.getSuit().equals(bottem.getSuit())) {
                             value += this.values[3] + this.values[4];
                         } else {
                             value += this.values[3];

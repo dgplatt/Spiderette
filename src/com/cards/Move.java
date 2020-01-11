@@ -1,4 +1,4 @@
-package cards;
+package com.cards;
 public class Move {
     int depth, from, to, value;
     

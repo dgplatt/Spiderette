@@ -1,4 +1,4 @@
-package cards;
+package com.cards;
 import java.util.Random;
 
 public class Deck {

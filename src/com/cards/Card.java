@@ -1,4 +1,4 @@
-package cards;
+package com.cards;
 
 public class Card {
     int num;
@@ -15,16 +15,17 @@ public class Card {
     
     public Card(Card card) {
         this.num = card.getNum();
-        this.suit = card.Suit();
-        this.known = card.Known();
+        this.suit = card.getSuit();
+        this.known = card.isKnown();
         this.next = null;
     }
 
     public void print() {
-        System.out.print(this.to_String());
+        System.out.print(this.toString());
     }
 
-    public String to_String() {
+    @Override
+    public String toString() {
         String string_card = "";
         if (this.known == false) {
             string_card += "|  Unknown  |";
@@ -45,7 +46,7 @@ public class Card {
     }
 
     public boolean ordered() {
-        return (this.getNext() != null && this.getNext().Suit().equals(this.Suit()) && this.getNext().getNum() == this.getNum() + 1 && this.getNext().Known());
+        return (this.getNext() != null && this.getNext().getSuit().equals(this.getSuit()) && this.getNext().getNum() == this.getNum() + 1 && this.getNext().isKnown());
     }
 
     public boolean equal(Card other) {
@@ -53,10 +54,10 @@ public class Card {
         if(this.num != other.getNum()) {
             same = false;
         }
-        if (! this.suit.equals(other.Suit())){
+        if (! this.suit.equals(other.getSuit())){
             same = false;
         }
-        if (this.known != other.Known()){
+        if (this.known != other.isKnown()){
             same = false;
         }
         return same;
@@ -64,7 +65,7 @@ public class Card {
     public int getNum() {
         return this.num;
     }
-    public String Suit() {
+    public String getSuit() {
         return this.suit;
     }
     public Card getNext() {
@@ -73,10 +74,10 @@ public class Card {
     public void setNext(Card next) {
         this.next = next;
     }
-    public boolean Known() {
+    public boolean isKnown() {
         return this.known;
     }
-    public void Flip() {
+    public void flip() {
         this.known = true;
     }
 }

@@ -1,5 +1,5 @@
-package auto;
-import cards.*;
+package com.auto;
+import com.cards.*;
 import java.util.*;
 public class MoveSet {
     ArrayList<Move> moves;

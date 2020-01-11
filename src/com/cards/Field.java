@@ -1,4 +1,4 @@
-package cards;
+package com.cards;
 
 public class Field {
     Card[] field;
@@ -52,7 +52,7 @@ public class Field {
         if (from_top == null) {
             return false;
         }
-        if (to_top != null && !(to_top.getNum() == from_top.getNum() + move.depth() + 1 && to_top.Known())) {
+        if (to_top != null && !(to_top.getNum() == from_top.getNum() + move.depth() + 1 && to_top.isKnown())) {
             return false;
         }
         return true;
@@ -75,8 +75,8 @@ public class Field {
     }
     public boolean doFlip (int i) {
         Card card = this.lane(i);
-        if (card != null && !card.Known()) {
-            card.Flip();
+        if (card != null && !card.isKnown()) {
+            card.flip();
             return true;
         }
         return false;
@@ -144,7 +144,7 @@ public class Field {
             empty = true;
             for (int i = 0; i < 7; i ++) {
                 if (for_print[i] != null) {
-                    string_field += for_print[i].to_String();
+                    string_field += for_print[i].toString();
                     for_print[i] = for_print[i].getNext();
                     empty = false;
                 }
