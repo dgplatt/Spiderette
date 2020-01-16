@@ -1,80 +1,67 @@
 package com.cards;
 
 public class Field {
-    Card[] field;
+    private Card[] field;
+
     public Field() {
         this.field = new Card[7];
     }
     
     public Field(Field field) {
         this.field = new Card[7];
-        Card new_card;
-        Card old_card;
         for (int i = 0; i < 7; i ++) {
-            if (field.lane(i) == null) {
+            if (field.get(i) == null) {
                 continue;
             }
-            old_card = field.lane(i);
-            new_card = new Card(old_card);
-            this.top(i, new_card);
-            while(old_card.getNext() != null) {
-                new_card.setNext(new Card(old_card.getNext()));
-                old_card = old_card.getNext();
-                new_card = new_card.getNext();
-            }
+            this.field[i] = new Card(field.get(i));
         }
     }
 
-    public Card[] getField() {
-        return field;
+    public Card get(int index) {
+        return this.field[index];
     }
 
-    public Card lane(int i) {
-        if (i < 0 || i > 6) {
-            return null;
-        }
-        return this.field[i];
-    }
-
-    public void top(int i, Card card) {
+    public void set(int index, Card card) {
         if (card != null){
-            card.setNext(this.lane(i));
+            card.setNext(this.get(index));
         }
-        this.field[i] = card;
+        this.field[index] = card;
     }
+
     public boolean canMove(Move move){
-        int max_depth = this.maxDepth(move.from());
-        if (move.depth() > max_depth) {
+        int maxDepth = this.maxDepth(move.from());
+        if (move.depth() > maxDepth) {
             return false;
         }
-        Card from_top = this.field[move.from()];
-        Card to_top = this.field[move.to()];
-        if (from_top == null) {
+        Card fromTop = this.field[move.from()];
+        Card toTop = this.field[move.to()];
+        if (fromTop == null) {
             return false;
         }
-        if (to_top != null && !(to_top.getNum() == from_top.getNum() + move.depth() + 1 && to_top.isKnown())) {
+        if (toTop != null && !(toTop.getNum() == fromTop.getNum() + move.depth() + 1 && toTop.isKnown())) {
             return false;
         }
         return true;
     }
 
     public boolean moveCard(Move move) {
-        if (! this.canMove(move)) {
-            return false;
-        }
-        Card from_top = this.field[move.from()];
-        Card to_top = this.field[move.to()];
-        Card card = from_top;
+        Card fromTop = this.field[move.from()];
+        Card toTop = this.field[move.to()];
+        Card card = fromTop;
         for (int i = 0; i < move.depth(); i ++ ) {
             card = card.getNext();
         }
         this.field[move.from()] = card.getNext();
-        card.setNext(to_top);
-        this.field[move.to()] = from_top;
-        return this.complete(move.to());
+        card.setNext(toTop);
+        this.field[move.to()] = fromTop;
+        if(card.isOrdered()) {
+            return this.complete(move.to());
+        }
+        return false;
     }
+
     public boolean doFlip (int i) {
-        Card card = this.lane(i);
+        Card card = this.get(i);
         if (card != null && !card.isKnown()) {
             card.flip();
             return true;
@@ -83,17 +70,18 @@ public class Field {
     }
 
     public int maxDepth(int i) {
-        Card card = this.lane(i);
+        Card card = this.get(i);
         int depth = 0;
-        while(card != null && card.ordered()) {
+        while(card != null && card.isOrdered()) {
             card = card.getNext();
             depth ++;
         }
         return depth;
     }
+
     public boolean complete(int i) {
         if (this.maxDepth(i) == 12) {
-            Card card = this.lane(i);
+            Card card = this.get(i);
             for (int j = 0; j < 12; j ++) {
                 card = card.getNext();
             }
@@ -103,19 +91,14 @@ public class Field {
         return false;
     }
 
-    public void print() {
-        System.out.print(this.toString());
-    }
-
     @Override
     public boolean equals(Object obj) {
         Field other = (Field) obj;
-        Card card_1;
-        Card card_2;
+        Card card_1, card_2;
         for (int i = 0; i < 7; i ++) {
-            card_1 = this.lane(i);
-            card_2 = other.lane(i);
-            while (card_1 != null && card_2 != null && card_1.equal(card_2))  {
+            card_1 = this.get(i);
+            card_2 = other.get(i);
+            while (card_1 != null && card_2 != null && card_1.equals(card_2))  {
                 card_1 = card_1.getNext();
                 card_2 = card_2.getNext();
             }
@@ -128,33 +111,33 @@ public class Field {
 
     @Override
     public String toString() {
-        Card[] for_print = new Card[7];
-        String string_field = "";
+        Card[] toPrint = new Card[7];
+        String fieldStr = "";
         for (int i = 0; i < 7; i ++) {
-            string_field += "|     " + i + "     |";
-            for_print[i] = this.field[i];
+            fieldStr += "|     " + (i + 1) + "     |";
+            toPrint[i] = this.field[i];
         }
-        string_field += "\n";;
+        fieldStr += "\n";;
         for (int i = 0; i < 7; i ++) {
-            string_field += "-------------";
+            fieldStr += "-------------";
         }
-        string_field += "\n";
+        fieldStr += "\n";
         boolean empty = false;
         while (!empty) {
             empty = true;
             for (int i = 0; i < 7; i ++) {
-                if (for_print[i] != null) {
-                    string_field += for_print[i].toString();
-                    for_print[i] = for_print[i].getNext();
+                if (toPrint[i] != null) {
+                    fieldStr += toPrint[i].toString();
+                    toPrint[i] = toPrint[i].getNext();
                     empty = false;
                 }
                 else {
-                    string_field += "|           |";
+                    fieldStr += "|           |";
                 }
             }
-            string_field += "\n";
+            fieldStr += "\n";
         }
-        return string_field;
+        return fieldStr;
     }
 
     @Override
@@ -169,6 +152,4 @@ public class Field {
         }
         return Integer.parseInt(s);
     }
-
-    
 }

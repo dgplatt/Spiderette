@@ -2,33 +2,27 @@ package com.auto;
 import com.cards.*;
 import java.util.*;
 public class MoveSet {
-    ArrayList<Move> moves;
-    int value;
-    Field field;
-    MoveSet (Field field) {
+    private ArrayList<Move> moves;
+    private int value;
+    private Field field;
+
+    MoveSet(Field field) {
         this.field = new Field(field);
         this.moves = new ArrayList<Move>();
         this.value = 0;
     }
 
-    MoveSet (MoveSet other) {
+    MoveSet(MoveSet other) {
         this.field = new Field(other.field);
         this.moves = new ArrayList<Move>();
-        for(Move move: other.moves){
-            this.moves.add(move);
-        }
+        this.moves.addAll(other.getMoves());
         this.value = other.getValue();
     }
 
-    boolean add (Move move) {
+    boolean add(Move move) {
         this.moves.add(move);
         this.value += move.value();
         return this.field.moveCard(move);
-    }
-    @Override
-    public boolean equals(Object other) {
-        MoveSet obj = (MoveSet) other;
-        return (obj.getField().equals(this.field));
     }
 
     int getValue(){
@@ -47,12 +41,21 @@ public class MoveSet {
         return this.moves;
     }
 
-    public void print() {
+    @Override
+    public String toString() {
+        String moveSetStr = "";
         for(Move move: this.moves){
-            move.print();
+            moveSetStr += move.toString();
         }
-        System.out.println(" ||  Value = " + this.value);
+        return moveSetStr + " ||  Value = " + this.value + "\n";
     }
+
+    @Override
+    public boolean equals(Object other) {
+        MoveSet obj = (MoveSet) other;
+        return obj.getField().equals(this.field);
+    }
+    
     @Override
     public int hashCode() {
         return this.field.hashCode();

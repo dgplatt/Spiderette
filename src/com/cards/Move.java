@@ -27,7 +27,7 @@ public class Move {
         return this.value;
     }
     public String to_String() {
-        return ("  ||  depth : " + this.depth + "  ||  from : " + this.from + "  ||  to : " + this.to + "||  value : " + this.value +"\n");
+        return ("  ||  From: " + (this.from + 1) + "  ||  To: " + (this.to + 1) + "  ||  Depth: " + this.depth +   "  ||  Value : " + this.value +"\n");
     }
     public void print(){
         System.out.print(this.to_String());

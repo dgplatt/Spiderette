@@ -4,93 +4,87 @@ import com.cards.*;
 import com.auto.*;
 
 public class Spiderette {
-    Deck deck;
-    Field field;
-    int num_won;
-    int games_played;
-    int[] starter_scores;
-    int[] winning_starter_scores;
-    boolean testing;
-    static Scanner input = new Scanner(System.in);
+    private Deck deck;
+    private Field field;
+    private String gameRecord;
+    private boolean winner;
+    private int numMoves;
+    private int noDealScore;
+    private int[] values;
+    private int numRepeat;
 
-    Spiderette () {
-        this.num_won = 0;
-        this.games_played = 0;
-        this.starter_scores = new int[300];
-        this.winning_starter_scores = new int[300];
-        this.testing = false;
+    private static Scanner input;
+
+    public Spiderette (int[] values, int numRepeat) {
+        this.values = values;
+        this.numRepeat = numRepeat;
+        this.winner = false;
+        this.numMoves = 0;
+        this.gameRecord = "";
+        this.field = new Field();
+        this.deck = new Deck();
+
+        Card top;
+        for (int i = 0; i < 7; i++) {
+            for (int j = i; j < 7; j ++) {
+                top = this.deck.pop();
+                top.setNext(this.field.get(j));
+                this.field.set(j, top);
+            }
+        }
+        for (int i = 0; i < 7; i ++) {
+            this.field.get(i).flip();
+        }
     }
 
-    void auto_play(int num_repeat, int[] values) {
+    public void auto_play() {
         int done = 0;
-        int num_moves = 0;
-        int starter_score = 0;
-        String to_print = "";
-        boolean starter = true;
+        int score = 0;
 
-        this.Setup();
-        Auto_Solver solver = new Auto_Solver(num_repeat, values);
+        AutoSolver solver = new AutoSolver(this.numRepeat, this.values);
 
         while (done != 4) {
-            MoveSet best_act = solver.make_next_actions(this.field);
-            to_print += this.field.toString();
+            MoveSet best_act = solver.getNextSet(this.field);
+            this.gameRecord += this.field.toString();
             if (best_act == null) {
-                if (starter) {
-                    starter = false;
-                    this.starter_scores[starter_score] ++;
+                if (this.deck.getNumCards() == 24) {
+                    this.noDealScore = score;
                 }
                 if(this.Deal()){
                     continue;
                 } 
-                this.games_played ++;
-                if (! this.testing) {
-                    System.out.print(to_print);
-                    System.out.println("*****  GameOver in " + num_moves +  " Moves  ******");
-                }
                 return;
             }
             for(Move move: best_act.getMoves()) {
-                to_print += move.to_String();
+                this.gameRecord += move.to_String();
                 if (field.moveCard(move)) {
                     done++;
                 }
-                if (starter) {
-                    starter_score += move.value();
-                }
-                num_moves ++;
+                score += move.value();
+                this.numMoves ++;
                 if(this.field.doFlip(move.from()) || this.field.doFlip(move.to())) {
                     break;
                 }
             }
         }
-
-        this.num_won++;
-        this.games_played ++;
-        this.winning_starter_scores[starter_score] ++;
-        if (!this.testing) {
-            System.out.print(to_print);
-        }
-        System.out.println("*****  WINNER!! in " + num_moves +  " Moves ******");
+        this.winner = true;
     }
 
-    boolean play(int num_repeat, int[] values) {
-        this.Setup();
+    public void play() {
+        
+        AutoSolver solver = new AutoSolver(this.numRepeat, this.values);
 
-        String comm = "";
-        int depth; int from; int to; Card card;
+        int comm, depth, from, to;
+        Card card;
         int done = 0;
 
-        System.out.println("Commands:");
-        System.out.println("Quit --> stops the game");
-        System.out.println("New --> start new game");
-        System.out.println("Deal --> deal the top of the deck");
-        System.out.println("[0-6] --> select a lane");
-        
-        Auto_Solver solver = new Auto_Solver(num_repeat, values);
+        System.out.println("[0] Quit --> End the game");
+        System.out.println("[1-7] --> Select a lane");
+        System.out.println("[8] Deal --> Deal the top of the deck");
         while (done != 4) {
-            field.print();
-            deck.print();
-            MoveSet best_act = solver.make_next_actions(this.field);
+            System.out.print(field);
+            System.out.print(deck);
+            MoveSet best_act = solver.getNextSet(this.field);
             if (best_act == null) {
                 System.out.println("No Best Move");
             } else {
@@ -98,67 +92,62 @@ public class Spiderette {
                    move.print();
                 }
             }
-            System.out.print("Enter Commands:  ");
-            do {
-                comm = input.nextLine();
-            } while(comm.equals(""));
+            System.out.print("Enter Command [0-8]:  ");
+            comm = Spiderette.getNum(0, 8);
 
-            if(comm.equals("Quit") || comm.equals("quit")) {
-                this.games_played ++;
-                return false;
-            } else if (comm.equals("New") || comm.equals("new")) {
-                this.games_played ++;
-                return true;
-            } else if (comm.equals("Deal") || comm.equals("deal")){
+            if(comm == 0) {
+                return;
+            } else if (comm == 8){
                 this.Deal();
-            } else if (comm.length() == 1 && comm.charAt(0) >= '0' && comm.charAt(0) < '7') {
-                from = Integer.parseInt(comm);
-                card = this.field.lane(from);
+            } else {
+                from = comm - 1;
+                card = this.field.get(from);
                 if (card == null) {
                     System.out.println("No card there");
                     continue;
                 }
                 depth = this.field.maxDepth(from);
                 if (depth > 0) {
-                    System.out.print("Max Depth y/n?:  ");
-                    do {
-                        comm = input.nextLine();
-                    } while (! comm.equals("y") && ! comm.equals("n"));
-                    if (comm.equals("n")) { 
-                        do { 
-                            System.out.print("Depth?:  ");
-                            comm = input.nextLine();
-                        } while(! (comm.length() == 1 && comm.charAt(0) >= '0' && comm.charAt(0) < '0' + 13));
-                        depth = Integer.parseInt(comm);
-                    }
+                    System.out.print("Depth [0-"+ depth + "]:  ");
+                    depth = Spiderette.getNum(0, depth);
                 }
                 if (this.field.doFlip(from)) { 
                     continue; 
                 }
-                do {
-                    System.out.print("Where to?:  ");
-                    comm = input.nextLine();
-                } while (! (comm.length() == 1 && comm.charAt(0) >= '0' && comm.charAt(0) < '7'));
-
-                to = Integer.parseInt(comm);
+                System.out.print("Where to? [1-7]:  ");
+                to = Spiderette.getNum(1, 7) - 1;
                 Move move = new Move(depth, from, to);
                 if (this.field.canMove(move)){
                     if (this.field.moveCard(move)) {
                         done++;
                     }
                 } else {
-                    System.out.print("Can't move there");
+                    System.out.println("Invalid move");
                 }
             }
         }
-        this.games_played ++;
-        System.out.print("*****  WINNER!!  ******");
-        this.num_won++;
-        return repeat();
+        this.winner = true;
     }
 
+    private static int getNum(int lower, int upper) {
+        int comm;
+        while (true) {
+            try {
+                comm = input.nextInt();
+                if (comm >= lower && comm <= upper) {
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.print("Enter number [" + lower + "-" + upper + "]: ");
+            } finally {
+                input.nextLine();
+            }
+            System.out.print("Enter number [" + lower + "-" + upper + "]: ");
+        } 
+        return comm;
+    }
 
-    boolean repeat() {
+    public static boolean repeat() {
         String comm = "";
         System.out.print("Again (y/n)?:  ");
         while (! comm.equals("y") && ! comm.equals("n")) {
@@ -167,37 +156,42 @@ public class Spiderette {
         return comm.equals("y");
     }
 
-    private void Setup() {
-        this.field = new Field();
-        this.deck = new Deck();
-        Card current;
-        for (int i = 0; i < 7; i++) {
-            for (int j = i; j < 7; j ++) {
-                this.deck.use();
-                current = this.deck.Start();
-                this.deck.Start(current.getNext());
-                current.setNext(this.field.lane(j));
-                this.field.top(j,current);
-            }
-        }
-        for (int i = 0; i < 7; i ++) {
-            this.field.lane(i).flip();
-        }
-    }
-
     boolean Deal() {
-        Card current;
-        if (this.deck.Start() == null ) {
+        Card top;
+        if (this.deck.getNumCards() == 0 ) {
             return false;
         }   
-        for (int i = 0; i < 7 && this.deck.Start() != null ; i++) {
-            this.deck.use();
-            current = this.deck.Start();
-            this.deck.Start(current.getNext());
-            current.setNext(this.field.lane(i));
-            this.field.top(i, current);
-            current.flip();
+        for (int i = 0; i < 7 && this.deck.getNumCards() > 0 ; i++) {
+            top = this.deck.pop();
+            top.setNext(this.field.get(i));
+            this.field.set(i, top);
+            top.flip();
         }
         return true;
     }
+
+    public String getGameRecord() {
+        return gameRecord;
+    }
+
+    public boolean isWinner() {
+        return winner;
+    }
+
+    public int getNumMoves() {
+        return numMoves;
+    }
+
+    public int getNoDealScore() {
+        return noDealScore;
+    }
+    public static void close(){
+        Spiderette.input.close();
+    }
+
+    public static void setInput(Scanner input) {
+        Spiderette.input = input;
+    }
+    
+    
 }
