@@ -6,30 +6,30 @@ public class MoveSet {
     private int value;
     private Field field;
 
-    MoveSet(Field field) {
-        this.field = new Field(field);
+    public MoveSet(Field field) {
+        this.field = field;
         this.moves = new ArrayList<Move>();
         this.value = 0;
     }
 
-    MoveSet(MoveSet other) {
-        this.field = new Field(other.field);
+    public MoveSet(MoveSet other, Move move) {
+        this.field = new Field(other.field, move);
         this.moves = new ArrayList<Move>();
         this.moves.addAll(other.getMoves());
         this.value = other.getValue();
     }
 
-    boolean add(Move move) {
+    public boolean add(Move move) {
         this.moves.add(move);
-        this.value += move.value();
+        this.value += move.getValue();
         return this.field.moveCard(move);
     }
 
-    int getValue(){
+    public int getValue(){
         return this.value;
     }
     
-    void addValue(int val){
+    public void addValue(int val){
         this.value += val;
     }
 

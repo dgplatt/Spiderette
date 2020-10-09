@@ -23,10 +23,10 @@ public class Deck {
     private static Card[] makeCards() {
         Card[] deck = new Card[52];
         for (int i = 0; i < 13; i ++) {
-            deck[i*4] = new Card(i + 1, "Clbs");
-            deck[i*4 + 1] = new Card(i + 1, "Dmds");
-            deck[i*4 + 2] = new Card(i + 1, "Hrts");
-            deck[i*4 + 3] = new Card(i + 1, "Spds");
+            deck[i*4] = new Card(i + 1, 0);
+            deck[i*4 + 1] = new Card(i + 1, 1);
+            deck[i*4 + 2] = new Card(i + 1, 2);
+            deck[i*4 + 3] = new Card(i + 1, 3);
         }
         return deck;
     }

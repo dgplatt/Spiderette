@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Spiderette</title>
+	<script src = "jquery-3.4.1.js"></script>
+	<link rel = "stylesheet" type="text/css" href = "spider.css">
+	<script>
+		$("document").ready(function(){
+			$("#playtype").on("click", function() {
+				console.log($("input[name='play']:checked").val());
+				if($("input[name='play']:checked").val() == "auto") {
+					$("#autoplayer").show();
+				} else {
+					$("#autoplayer").hide();
+				}
+			})
+			$("#playGame").on("click", function() {
+				$.ajax({
+				  type: "POST",
+				  url: "Spider",
+				  data: {
+					  playType: $("input[name='play']:checked").val(),
+					  diff : $("#diff").val(),
+					  numRepeat : $("#numrepeat").val(),
+					  testing : $("#testing").val()
+				  }
+				}).done(function (data){
+					console.log("Success " + data)
+					$("#gamesWon").text(data);
+				}).fail(function(data){
+					console.log("Fail " + data)
+				});
+			})
+		})
+	</script>
+</head>
+<body>
+	<fieldset>
+		<legend>Spiderette Player</legend>
+		<div id = "playtype">Please select how you want to play:
+			<input type="radio" name="play" value="manual" checked> Manual
+			<input type="radio" name="play" value="auto"> Auto
+		</div>
+		<div>
+			<label for = "diff">Choose your pain:   </label>
+			<select name = "difficulty" id = "diff">
+			<option value = "easy">Easy</option>
+			<option value = "medium">Medium</option>
+			<option value = "hard">Hard</option>
+			</select>
+		</div>
+		<div id = "autoplayer">
+			<label for = "numrepeat">How far can you see into the future:  </label>
+			<input type = "number" id = "numrepeat" value = "8" min = "1" max = "12"> <br/>
+			<label for = "testing">  Test the Auto Solver:  </label>
+			<input type = "checkbox" id = "testing" value = "testing">
+			<input type = "number" id = "testrepeat" value = "10000" min = "1" max = "100000">
+		</div>
+		
+		<div>
+		<input type="button" value = "Play Game" id = "playGame">
+		</div>
+	</fieldset>
+	<p>Games Played: &nbsp &nbsp          <span id = "gamesPlayed">0</span></p>
+	<p>Games Won: &nbsp &nbsp &nbsp &nbsp <span id = "gamesWon">0</span></p>
+</body>
+</html>

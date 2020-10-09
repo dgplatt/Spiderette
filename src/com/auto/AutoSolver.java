@@ -47,9 +47,9 @@ public class AutoSolver {
 
         // Initialize all the HashSets
         for (int i = 0; i < this.numBuckets; i ++) {
-            allSets.add(new HashSet<MoveSet>(1000));
-            prevSets.add(new HashSet<MoveSet>(1000));
-            newSets.add(new HashSet<MoveSet>(1000));
+            allSets.add(new HashSet<MoveSet>(1000000));
+            prevSets.add(new HashSet<MoveSet>(1000000));
+            newSets.add(new HashSet<MoveSet>(100000));
         }
         // Add current field with empty MoveSet to prevSets so it will be used
         prevSets.get(this.center).add(new MoveSet(field));
@@ -65,18 +65,21 @@ public class AutoSolver {
                 // Get each move set
                 for (MoveSet mSet: prevSets.get(y)){
                     // Find all possible moves for its field
-                    for (Move move: getAvailableMoves(mSet.getField())) {
+                    for (Move move: getAvailableMoves(mSet)) {
                         // If within the next this.numRepeat - i - 1 turns it can't reach max value: skip 
-                        if(mSet.getValue() + move.value() < (maxVal + 1) - this.maxInc * (this.numRepeat - i - 1)) {
+                        if(mSet.getValue() + move.getValue() < (maxVal + 1) - this.maxInc * (this.numRepeat - i - 1)) {
                             continue;
                         }
                         // Clone MoveSet and add move
-                        setNew = new MoveSet(mSet);
+                        setNew = new MoveSet(mSet, move);
                         if (setNew.add(move)) { // Returns true if move completes a row of twelve
                             // Add value based on what is below the row
-                            if (setNew.getField().get(move.to()) == null) {
+                            if(setNew.getField().isDone()) {
+                                return setNew;
+                            }
+                            if (setNew.getField().get(move.getTo()) == null) {
                                 setNew.addValue(this.values[0]);
-                            } else if (!setNew.getField().get(move.to()).isKnown()) {
+                            } else if (!setNew.getField().get(move.getTo()).isKnown()) {
                                 setNew.addValue(this.values[1]);
                             }
                         }
@@ -102,7 +105,7 @@ public class AutoSolver {
             // add all values in prevSets to all sets and newSets becomes prevSets
             for (int y = start - this.maxDrc; y <= end + this.maxInc; y++) {
                 allSets.get(y).addAll(prevSets.get(y));
-                prevSets.get(y).clear();
+                prevSets.set(y, new HashSet<MoveSet>(100000));
             }
             tempA = prevSets;
             prevSets = newSets;
@@ -113,47 +116,47 @@ public class AutoSolver {
 
     /*
     * Input: Field field (A Field)
-    * Output: A list of all possible moves for that field with calculaed values
+    * Output: A list of all possible moves for that field with calculated values
     */
-    public ArrayList<Move> getAvailableMoves(Field field) {
+    public ArrayList<Move> getAvailableMoves(MoveSet mSet) {
+        Field field = mSet.getField();
         ArrayList<Move> moves = new ArrayList<Move>();
-        Card other, bottem;
-        int depth, value, topNum, maxDepth;
+        Card other, top, bottem;
+        int depth, value, maxDepth;
+        Boolean toNull;
 
         // Look at the top card in each lane of the field
         for(int from = 0; from < 7; from++) {
-            bottem = field.get(from);
-            if (bottem == null || !bottem.isKnown()) {
+            toNull = false;
+            top = field.get(from);
+            if (top == null || !top.isKnown()) {
                 continue;
             }
-            topNum = bottem.getNum();
-            maxDepth = 0;
+            bottem = field.maxDepth(from);
+            maxDepth = bottem.getNum() - top.getNum();
             // Find the max depth of possible move and the bottem card
-            while (bottem.isOrdered()) {
-                bottem = bottem.getNext();
-                maxDepth ++;
-            }
             // Look through all other top cards
             for (int i = 0; i < 7; i ++) {
                 if (i == from) {
                     continue;
                 }
-                // Based on set values caluclate value of move if possible
+                // Based on set values calculate value of move if possible
                 value = 0;
                 other = field.get(i);
                 // Don't allow moving from one blank space to another because that's waseful
-                if (other == null && bottem.getNext() != null) { 
+                if (other == null && bottem.getNext() != null && !toNull) {
+                    toNull = true;
                     value -= this.values[0];
                     if (! bottem.getNext().isKnown()) {
                         value += this.values[1];
                     } else if (bottem.getNext().getNum() != bottem.getNum() + 1) {
                         value += this.values[2];
-                    } else if (! bottem.getNext().getSuit().equals(bottem.getSuit())) {
+                    } else if (bottem.getNext().getSuit() != bottem.getSuit()) {
                         value -= this.values[3];
                     }
                     moves.add(new Move(maxDepth, from, i, value));
-                } else if (other != null && other.getNum() > topNum && other.getNum() <= bottem.getNum() + 1 && other.isKnown()) {
-                    depth = other.getNum() - (topNum + 1);
+                } else if (other != null && other.getNum() > top.getNum() && other.getNum() <= bottem.getNum() + 1 && other.isKnown()) {
+                    depth = other.getNum() - (top.getNum() + 1);
                     if (depth == maxDepth) {
                         if(bottem.getNext() == null) {
                             value += this.values[0];
@@ -161,10 +164,10 @@ public class AutoSolver {
                             value += this.values[1];
                         } else if (bottem.getNext().getNum() != bottem.getNum() + 1) {
                             value += this.values[2];
-                        } else if (! bottem.getNext().getSuit().equals(bottem.getSuit())) {
+                        } else if (bottem.getNext().getSuit() != bottem.getSuit()) {
                             value -= this.values[3];
                         } 
-                        if(other.getSuit().equals(bottem.getSuit())) {
+                        if(other.getSuit() == bottem.getSuit()) {
                             value += this.values[3] + this.values[4];
                         } else {
                             value += this.values[3];

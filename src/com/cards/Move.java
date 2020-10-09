@@ -1,6 +1,6 @@
 package com.cards;
 public class Move {
-    int depth, from, to, value;
+    private int depth, from, to, value;
     
     public Move (int depth, int from, int to, int value) {
         this.depth = depth;
@@ -14,22 +14,20 @@ public class Move {
         this.to = to;
         this.value = 0;
     }
-    public int depth() {
+    public int getDepth() {
         return this.depth;
     }
-    public int from() {
+    public int getFrom() {
         return this.from;
     }
-    public int to() {
+    public int getTo() {
         return this.to;
     }
-    public int value() {
+    public int getValue() {
         return this.value;
     }
-    public String to_String() {
-        return ("  ||  From: " + (this.from + 1) + "  ||  To: " + (this.to + 1) + "  ||  Depth: " + this.depth +   "  ||  Value : " + this.value +"\n");
-    }
-    public void print(){
-        System.out.print(this.to_String());
+    @Override
+    public String toString() {
+        return "|  From: " + (this.from + 1) + "  ||  Depth: " + this.depth +   "  ||  To: " + (this.to + 1) + "  ||  Value : " + this.value + "  |";
     }
 }

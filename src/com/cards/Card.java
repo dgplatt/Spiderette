@@ -1,68 +1,78 @@
 package com.cards;
 
 public class Card {
-    private int num;
-    private String suit;
+    private byte num;
+    private byte suit;
     private boolean known;
     private Card next;
+    private Card bottom;
     
-    public Card(int num, String suit) {
-        this.num = num;
-        this.suit = suit;
+    public Card(int num, int suit) {
+        this.num = (byte) num;
+        this.suit = (byte) suit;
         this.known = false;
         this.next = null;
     }
-    
+
     public Card(Card card) {
         this.num = card.getNum();
         this.suit = card.getSuit();
         this.known = card.isKnown();
-        if (card.getNext() != null) {
-            this.next = new Card(card.getNext());
-        } else {
-            this.next = null;
+        this.next = card.getNext();
+        this.bottom = card.getBottom();
+    }
+
+    public Card(Card card, Card bottom) {
+        this.num = card.getNum();
+        this.suit = card.getSuit();
+        this.known = card.isKnown();
+        Card next = card.getNext();
+        this.bottom = bottom;
+        if(next != null) {
+            if (next.equals(bottom)) {
+                this.next = bottom;
+            }  else {
+                this.next = new Card(next, this.bottom);
+            }
         }
     }
 
     @Override
     public String toString() {
         String cardStr = "";
+        final String[] suits =  new String[] {"Clbs", "Dmds", "Hrts", "Spds"};
+
+        String suit = suits[this.suit];
         if (this.known == false) {
             cardStr += "|  Unknown  |";
         } else if (this.num == 1) {
-            cardStr += "| A of " + this.suit + " |";
+            cardStr += "| A of " + suit + " |";
         } else if (this.num < 10) {
-            cardStr += "| " + this.num + " of " + this.suit + " |";
+            cardStr += "| " + this.num + " of " + suit + " |";
         } else if (this.num == 10) {
-            cardStr += "| X of " + this.suit + " |";
+            cardStr += "| X of " + suit + " |";
         } else if (this.num == 11) {
-            cardStr += "| J of " + this.suit + " |";
+            cardStr += "| J of " + suit + " |";
         } else if (this.num == 12) {
-            cardStr += "| Q of " + this.suit + " |";
+            cardStr += "| Q of " + suit + " |";
         } else if (this.num == 13) {
-            cardStr += "| K of " + this.suit + " |";
+            cardStr += "| K of " + suit + " |";
         }
         return cardStr;
     }
 
     public boolean isOrdered() {
         return (this.getNext() != null 
-                && this.getNext().getSuit().equals(this.getSuit()) 
+                && this.getNext().getSuit() == this.getSuit() 
                 && this.getNext().getNum() == this.getNum() + 1 
                 && this.getNext().isKnown());
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        Card other = (Card) obj;
-        return this.num == other.getNum() && this.suit.equals(other.getSuit());
-    }
-
-    public int getNum() {
+    public byte getNum() {
         return this.num;
     }
 
-    public String getSuit() {
+    public byte getSuit() {
         return this.suit;
     }
 
@@ -80,5 +90,29 @@ public class Card {
     
     public void flip() {
         this.known = true;
+    }
+
+    public Card getBottom() {
+        return bottom;
+    }
+
+    public void setBottom(Card bottom) {
+        this.bottom = this != bottom ? bottom : null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Card other = (Card) obj;
+        return this.num == other.num && this.suit == other.suit;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((bottom == null) ? 0 : bottom.hashCode());
+        result = prime * result + num;
+        result = prime * result + suit;
+        return result;
     }
 }
