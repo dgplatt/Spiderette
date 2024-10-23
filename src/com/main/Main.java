@@ -10,7 +10,6 @@ public class Main {
     public static void main(String[] args) throws Exception{
         int num_repeat = 10;
         int number_play = 1;
-        //int[] values = new int[] {2, 4, 0, 1, 3};
         int spaceValue = 2;
         int unknownValue = 3;
         int disorderedValue = 0;
