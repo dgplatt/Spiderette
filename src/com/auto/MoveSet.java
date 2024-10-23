@@ -2,27 +2,36 @@ package com.auto;
 import com.cards.*;
 import java.util.*;
 public class MoveSet {
-    private ArrayList<Move> moves;
+    private Move move;
     private int value;
     private Field field;
+    private MoveSet oldMoveSet;
 
     public MoveSet(Field field) {
-        this.field = field;
-        this.moves = new ArrayList<Move>();
+        this.move = null;
         this.value = 0;
+        this.field = field;
+        this.oldMoveSet = null;
     }
 
     public MoveSet(MoveSet other, Move move) {
+        this.oldMoveSet = other;
         this.field = new Field(other.field, move);
-        this.moves = new ArrayList<Move>();
-        this.moves.addAll(other.getMoves());
-        this.value = other.getValue();
+        this.move = move;
+        this.value = other.getValue() + move.getValue();
     }
 
-    public boolean add(Move move) {
-        this.moves.add(move);
-        this.value += move.getValue();
-        return this.field.moveCard(move);
+    public Move getMove() {
+        return this.move;
+    }
+
+    public ArrayList<Move> getMoves() {
+        if(oldMoveSet == null) {
+            return new ArrayList<Move>();
+        }
+        ArrayList<Move> moves = oldMoveSet.getMoves();
+        moves.add(this.move);
+        return moves;
     }
 
     public int getValue(){
@@ -37,17 +46,16 @@ public class MoveSet {
         return this.field;
     }
 
-    public ArrayList<Move> getMoves() {
-        return this.moves;
+    public boolean getComplete() {
+        return this.field.isLineComplete();
     }
 
     @Override
     public String toString() {
-        String moveSetStr = "";
-        for(Move move: this.moves){
-            moveSetStr += move.toString();
+        if(this.oldMoveSet == null) {
+            return this.move + " ||  Value = " + this.value + "\n";
         }
-        return moveSetStr + " ||  Value = " + this.value + "\n";
+        return this.oldMoveSet.toString() + this.move + " ||  Value = " + this.value + "\n";
     }
 
     @Override

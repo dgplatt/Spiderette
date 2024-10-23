@@ -10,6 +10,7 @@ public class Field extends ArrayList<Card> {
     private static final long serialVersionUID = 5897313269777042217L;
     private int hashcode;
     private byte numComplete;
+    private boolean isLineCompleted;
 
     public Field(int initialCapacity) {
         super(initialCapacity);
@@ -17,29 +18,45 @@ public class Field extends ArrayList<Card> {
 
     public Field(Field field, Move move) {
         super(field);
-        for (int i : new int[] { move.getTo(), move.getFrom() }) {
-            if (this.get(i) != null) {
-                Card bottom = this.get(i).getBottom();
-                if (bottom == null) {
-                    this.set(i, new Card(this.get(i)));
-                } else {
-                    bottom = new Card(bottom);
-                    this.set(i, new Card(this.get(i), bottom));
-                }
+        Card toTop = this.get(move.getTo());
+        if (toTop != null) {
+            Card toBottom = toTop.getBottom();
+            if(toTop != toBottom) {
+                toBottom = new Card(toBottom, true);
+                toTop = new Card(toTop, toBottom);
+            } else {
+                toTop = new Card(toTop, true);
             }
         }
+        this.set(move.getTo(), toTop);
+
+        Card fromTop = this.get(move.getFrom());
+        if(move.getDepth() > 0) {
+            Card fromBottom = fromTop.getBottom();
+            int maxDepth = fromBottom.getNum() - fromTop.getNum();
+            if(move.getDepth() != maxDepth) {
+                fromBottom = fromTop;
+                for (int i = 0; i < move.getDepth(); i++) {
+                    fromBottom = fromBottom.getNext();
+                }
+            }
+            fromBottom = new Card(fromBottom, true);
+            fromTop = new Card(fromTop, fromBottom);
+        } else {
+            fromTop = new Card(fromTop, true);
+        }
+        this.set(move.getFrom(), fromTop);
+        this.isLineCompleted = this.moveCard(move);
         this.hashcode = field.hashCode();
         this.numComplete = field.getNumComplete();
     }
 
     public Card put(int index, Card card) {
         if (card != null) {
-            card.setNext(this.get(index));
-            if (this.get(index) != null) {
-                Card bottom = this.maxDepth(index);
-                if (card.isOrdered()) {
-                    card.setBottom(bottom);
-                }
+            Card nextCard = this.get(index);
+            card.setNext(nextCard);
+            if (nextCard != null && card.isSuited()) {
+                card.setBottom(nextCard.getBottom());
             }
         }
         return super.set(index, card);
@@ -50,8 +67,8 @@ public class Field extends ArrayList<Card> {
         if (fromTop == null) {
             return false;
         }
-        Card bottom = this.maxDepth(move.getFrom());
-        int maxDepth = bottom.getNum() - fromTop.getNum();
+        Card fromBottom = fromTop.getBottom();
+        int maxDepth = fromBottom.getNum() - fromTop.getNum();
         if (move.getDepth() > maxDepth) {
             return false;
         }
@@ -64,32 +81,35 @@ public class Field extends ArrayList<Card> {
 
     public boolean moveCard(Move move) {
         Card fromTop = this.get(move.getFrom());
-        Card fromBottom = this.maxDepth(move.getFrom());
-        Card toTop = this.get(move.getTo());
-        if (toTop != null) {
-            Card toBottom = this.maxDepth(move.getTo());
-            if (fromTop.getSuit() == toTop.getSuit()) {
-                fromTop.setBottom(toBottom);
-            } else if (move.getDepth() != fromBottom.getNum() - fromTop.getNum()) {
-                Card card = fromTop;
-                for (int i = 0; i < move.getDepth(); i++) {
-                    card = card.getNext();
-                }
-                fromTop.setBottom(card);
-                card.getNext().setBottom(fromBottom);
-                fromBottom = card;
-                fromBottom.setBottom(null);
+        Card fromBottom = fromTop.getBottom();
+        if(move.getDepth() < fromBottom.getNum() - fromTop.getNum()) {
+            fromBottom = fromTop;
+            for (int i = 0; i < move.getDepth(); i++) {
+                fromBottom = fromBottom.getNext();
             }
         }
+        Card toTop = this.get(move.getTo());
+
+        //Set the card on top as the card after last card removed
         this.set(move.getFrom(), fromBottom.getNext());
+
+        //Set new bottom if placed on suited card
         fromBottom.setNext(toTop);
+        if (toTop != null && fromTop.getSuit() == toTop.getSuit()) {
+            fromTop.setBottom(toTop.getBottom());
+        } else {
+            fromTop.setBottom(fromBottom);
+        }
+
+        //Set new top card
         this.set(move.getTo(), fromTop);
-        Boolean toReturn = false;
+
+        Boolean isComplete = false;
         if (this.complete(move.getTo())) {
-            toReturn = true;
+            isComplete = true;
         }
         this.setHashCode();
-        return toReturn;
+        return isComplete;
     }
 
     public boolean doFlip(int i) {
@@ -101,13 +121,8 @@ public class Field extends ArrayList<Card> {
         return false;
     }
 
-    public Card maxDepth(int i) {
-        Card card = this.get(i);
-        return card.getBottom() != null ? card.getBottom() : card;
-    }
-
     public boolean complete(int i) {
-        Card bottom = this.maxDepth(i);
+        Card bottom = this.get(i).getBottom();
         if (bottom.getNum() - this.get(i).getNum() == 12) {
             this.set(i, bottom.getNext());
             this.numComplete ++;
@@ -116,7 +131,9 @@ public class Field extends ArrayList<Card> {
         return false;
     }
 
-    
+    public boolean isLineComplete() {
+        return this.isLineCompleted;
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -126,8 +143,8 @@ public class Field extends ArrayList<Card> {
             card_1 = this.get(i);
             card_2 = other.get(i);
             while (card_1 != card_2 && card_1 != null && card_2 != null && card_1.equals(card_2)) {
-                card_1 = card_1.getBottom() != null ? card_1.getBottom() : card_1.getNext();
-                card_2 = card_2.getBottom() != null ? card_2.getBottom() : card_2.getNext();
+                card_1 = card_1.getBottom() != card_1 ? card_1.getBottom() : card_1.getNext();
+                card_2 = card_2.getBottom() != card_2 ? card_2.getBottom() : card_2.getNext();
             }
             if (card_1 != card_2) {
                 return false;
@@ -139,31 +156,37 @@ public class Field extends ArrayList<Card> {
     @Override
     public String toString() {
         Card[] toPrint = new Card[7];
-        String fieldStr = "";
+        StringBuilder fieldStr = new StringBuilder();
         for (int i = 0; i < 7; i++) {
-            fieldStr += "|     " + (i + 1) + "     |";
+            fieldStr.append("|     ");
+            fieldStr.append(i + 1);
+            fieldStr.append("     |");
             toPrint[i] = this.get(i);
         }
-        fieldStr += "\n";
+        fieldStr.append("\n");
         ;
         for (int i = 0; i < 7; i++) {
-            fieldStr += "-------------";
+            fieldStr.append("-------------");
         }
         boolean empty = false;
         while (!empty) {
-            fieldStr += "\n";
+            fieldStr.append("\n");
             empty = true;
             for (int i = 0; i < 7; i++) {
                 if (toPrint[i] != null) {
-                    fieldStr += toPrint[i].toString();
-                    toPrint[i] = toPrint[i].getNext();
+                    fieldStr.append(toPrint[i].toString());
+                    if(toPrint[i].isKnown() && toPrint[i].getBottom() != toPrint[i] && !toPrint[i].getBottom().equals(toPrint[i].getNext())) {
+                        toPrint[i] = Card.getPackedCard(toPrint[i]);
+                    } else {
+                        toPrint[i] = toPrint[i].getNext();
+                    }
                     empty = false;
                 } else {
-                    fieldStr += "|           |";
+                    fieldStr.append("|           |");
                 }
             }
         }
-        return fieldStr;
+        return fieldStr.toString();
     }
 
     public void setHashCode() {

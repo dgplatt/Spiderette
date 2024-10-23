@@ -6,20 +6,20 @@ import com.auto.*;
 public class Spiderette {
     private Deck deck;
     private Field field;
-    private String gameRecord;
+    private StringBuilder gameRecord;
     private boolean winner;
     private int numMoves, numRepeat;
-    private int[] values, scores;
-
+    private Values values;
+    private int[] scores;
     private static Scanner input;
 
-    public Spiderette (int[] values, int numRepeat) {
+    public Spiderette (Values values, int numRepeat) {
         this.values = values;
         this.scores = new int[5];
         this.numRepeat = numRepeat;
         this.winner = false;
         this.numMoves = 0;
-        this.gameRecord = "";
+        this.gameRecord = new StringBuilder();
         this.field = new Field(7);
         this.deck = new Deck();
 
@@ -44,24 +44,32 @@ public class Spiderette {
         int deals = 0;
 
         AutoSolver solver = new AutoSolver(this.numRepeat, this.values);
-
+        this.gameRecord = new StringBuilder();
+        this.gameRecord.append(this.field.toString());
+        this.gameRecord.append("\n");
         while (!this.field.isDone()) {
             MoveSet best_act = solver.getNextSet(this.field);
-            this.gameRecord += this.field.toString();
             if (best_act == null) {
                 this.scores[deals] = score;
                 deals ++;
                 if(this.Deal()){
+                    this.gameRecord.append(this.field.toString());
+                    this.gameRecord.append("\n");
                     continue;
                 } 
                 return;
             }
             for(Move move: best_act.getMoves()) {
-                this.gameRecord += move.toString() + "/n";
-                field.moveCard(move);
+                this.gameRecord.append(move.toString());
+                this.gameRecord.append("\n");
+                this.field.moveCard(move);
+                this.gameRecord.append(this.field.toString());
+                this.gameRecord.append("\n");
                 score += move.getValue();
                 this.numMoves ++;
                 if(this.field.doFlip(move.getFrom()) || this.field.doFlip(move.getTo())) {
+                    this.gameRecord.append(this.field.toString());
+                    this.gameRecord.append("\n");
                     break;
                 }
             }
@@ -87,9 +95,7 @@ public class Spiderette {
             if (best_act == null) {
                 System.out.println("No Best Move");
             } else {
-                for(Move move: best_act.getMoves()) {
-                   System.out.println(move);
-                }
+                System.out.print(best_act);
             }
             System.out.print("Enter Command [0-8]:  ");
             comm = Spiderette.getNum(0, 8);
@@ -105,7 +111,7 @@ public class Spiderette {
                     System.out.println("No card there");
                     continue;
                 }
-                Card bottom = this.field.maxDepth(from);
+                Card bottom = this.field.get(from).getBottom();
                 depth = bottom.getNum() - card.getNum();
                 if (depth > 0) {
                     System.out.print("Depth [0-"+ depth + "]:  ");
@@ -168,7 +174,7 @@ public class Spiderette {
     }
 
     public String getGameRecord() {
-        return gameRecord;
+        return gameRecord.toString();
     }
 
     public boolean isWinner() {
